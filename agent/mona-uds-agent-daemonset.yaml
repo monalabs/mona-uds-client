@@ -28,8 +28,8 @@ spec:
           imagePullPolicy: Always
           image: monalabs/mona-uds-agent:stable
           env:
-            - name: MONA_ENDPOINT
-              value: '<YOUR_PRIVATE_MONA_ENDPOINT>'
+            - name: MONA_USER_ID
+              value: '<YOUR_PRIVATE_MONA_USER_ID>'
           resources:
             limits:
               cpu: '2'
