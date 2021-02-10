@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: mona-uds-agent
+spec:
+  selector:
+    matchLabels:
+      app: mona-uds-agent
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 5
+  template:
+    metadata:
+      labels:
+        app: mona-uds-agent
+    spec:
+      initContainers:
+        - name: uds-init
+          imagePullPolicy: Always
+          image: monalabs/mona-agent-uds-init:stable
+          command: [ "sh", "./init.sh" ]
+          volumeMounts:
+            - name: uds-mona-socket
+              mountPath: /var/run/mona
+      containers:
+        - name: mona-uds-agent
+          imagePullPolicy: Always
+          image: monalabs/mona-uds-agent:stable
+          env:
+            - name: MONA_ENDPOINT
+              value: '<YOUR_PRIVATE_MONA_ENDPOINT>'
+          resources:
+            limits:
+              cpu: '2'
+              memory: '4G'
+          volumeMounts:
+            - mountPath: /var/run/mona/
+              name: uds-mona-socket
+      volumes:
+        - name: uds-mona-socket
+          hostPath:
+            path: /var/run/mona-agent/
+
