@@ -11,7 +11,7 @@ setuptools.setup(
     description="Client code for python Mona over Unix Domain Socket protocol",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/monalabs/mona-agent",
+    url="https://github.com/monalabs/mona-uds-client",
     download_url="http://pypi.python.org/pypi/mona-uds-client/",
     packages=setuptools.find_packages(),
     install_requires=["msgpack>=1.0.2"],
