@@ -24,7 +24,6 @@ RUN mkdir -p /var/run/mona && \
 ENV UDS_SERVER_ADDRESS="/var/run/mona/mona.sock"
 ENV LOG_LEVEL="warn"
 
-ENV WORKERS=1
 ENV FLUSH_INTERVAL="30s"
 ENV MONA_REST_TIMEOUT=5
 ENV MONA_REST_FORMAT_TYPE="json"
