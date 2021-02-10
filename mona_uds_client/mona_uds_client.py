@@ -69,6 +69,7 @@ else:
 # Currently Mutex allows only one export at a time.
 # TODO(nemo): Allow multiple concurrent exports if needed.
 UDS_SOCKET_MUTEX = threading.Lock()
+SERVER_SELECTOR_MUTEX = threading.Lock()
 
 USER_ID_FIELD_NAME = "userId"
 MESSAGES_FIELD_NAME = "messages"
@@ -85,10 +86,11 @@ def _select_server(base_address):
     if UDS_SERVER_REPLICAS <= 1:
         return base_address
     # Add suffix to the address for the replica number.
-    global CURRENT_SERVER_INDEX
-    server_address = base_address + str(CURRENT_SERVER_INDEX)
-    CURRENT_SERVER_INDEX = (CURRENT_SERVER_INDEX + 1) % UDS_SERVER_REPLICAS
-    return server_address
+    with SERVER_SELECTOR_MUTEX:
+        global CURRENT_SERVER_INDEX
+        server_address = base_address + str(CURRENT_SERVER_INDEX)
+        CURRENT_SERVER_INDEX = (CURRENT_SERVER_INDEX + 1) % UDS_SERVER_REPLICAS
+        return server_address
 
 
 @dataclass
