@@ -9,7 +9,7 @@ different environments and are published separately.
 
 With any issues please email itai@monalabs.io.
 
-# Example use:
+## Example use:
 
 Example code can be found in client/mona_uds_client_test.py.
 
@@ -49,6 +49,24 @@ client.export(
 )
 ```
 
+# Deployment
+The UDS client uses a local folder to communicate with Mona UDS agent. 
+As a result, when deployed on a container, the following mounts are required to be added to the container's YAML:
+
+In spec.template.spec:
+```
+volumes:
+- name: uds-mona-socket
+  hostPath:
+    path: /var/run/mona-agent/
+```
+In spec.template.spec.container:
+```
+volumeMounts:
+- mountPath: /uds/mona
+  name: uds-mona-socket
+```
+
 ## Uploading new version to PyPI
 The main reference to follow to do that is on:
 https://packaging.python.org/tutorials/packaging-projects/
@@ -70,3 +88,4 @@ $ python3 setup.py sdist bdist_wheel
 ```
 $ python -m twine upload dist/*
 ```
+
