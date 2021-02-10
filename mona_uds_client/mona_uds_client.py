@@ -48,7 +48,10 @@ class MonaValidationException(Exception):
 DEFAULT_MONA_USER_ID = environ.get("MONA_USER_ID", None)
 
 # The following two env vars must be synced with the Mona agent.
-DEFAULT_UDS_SERVER_ADDRESS = environ.get("MONA_UDS_SERVER_ADDRESS", "./mona_uds_socket")
+DEFAULT_UDS_SERVER_ADDRESS = environ.get(
+    "MONA_UDS_SERVER_ADDRESS", "/uds/mona/mona.sock"
+)
+DEFAULT_UDS_SERVER_REPLICAS = int(environ.get("MONA_UDS_SERVER_REPLICAS", 3))
 MONA_AGENT_TAG = environ.get("MONA_AGENT_TAG", "mona.client")
 
 SHOULD_RAISE_EXCEPTIONS = (
@@ -67,6 +70,9 @@ else:
 # TODO(nemo): Allow multiple concurrent exports if needed.
 UDS_SOCKET_MUTEX = threading.Lock()
 
+CURRENT_SERVER_INDEX = 0
+SERVER_SELECTOR_MUTEX = threading.Lock()
+
 USER_ID_FIELD_NAME = "userId"
 MESSAGES_FIELD_NAME = "messages"
 
@@ -74,6 +80,17 @@ MESSAGES_FIELD_NAME = "messages"
 def _raise(error_type, msg):
     if SHOULD_RAISE_EXCEPTIONS:
         raise error_type(msg)
+
+
+def _select_server(base_address, uds_server_replicas):
+    if uds_server_replicas <= 1:
+        return base_address
+    # Add suffix to the address for the replica number.
+    with SERVER_SELECTOR_MUTEX:
+        global CURRENT_SERVER_INDEX
+        server_address = base_address + str(CURRENT_SERVER_INDEX)
+        CURRENT_SERVER_INDEX = (CURRENT_SERVER_INDEX + 1) % uds_server_replicas
+        return server_address
 
 
 @dataclass
@@ -113,9 +130,11 @@ class MonaUdsClient:
         self,
         mona_user_id=DEFAULT_MONA_USER_ID,
         uds_server_address=DEFAULT_UDS_SERVER_ADDRESS,
+        uds_server_replicas=DEFAULT_UDS_SERVER_REPLICAS,
     ):
         self._user_id = mona_user_id
         self._uds_server_address = uds_server_address
+        self._uds_server_replicas = uds_server_replicas
 
     def export(self, messages: List[MonaSingleMessage]):
         """
@@ -165,7 +184,9 @@ class MonaUdsClient:
     def _send_data_by_uds(self, export_data):
         uds_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         with UDS_SOCKET_MUTEX:
-            uds_socket.connect(self._uds_server_address)
+            uds_socket.connect(
+                _select_server(self._uds_server_address, self._uds_server_replicas)
+            )
             try:
                 uds_socket.sendall(export_data)
             finally:
