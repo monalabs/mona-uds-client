@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mona_uds_client",
-    version="0.0.2",
+    version="0.0.4",
     author="MonaLabs",
     author_email="nemo@monalabs.io",
     description="Client code for python Mona over Unix Domain Socket protocol",
@@ -20,6 +20,5 @@ setuptools.setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: Unix",
     ],
-    packages=setuptools.find_packages(),
-    python_requires='>=3.7',
+    python_requires=">=3.7",
 )

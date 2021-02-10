@@ -13,10 +13,13 @@ With any issues please email itai@monalabs.io.
 
 Example code can be found in client/mona_uds_client_test.py.
 
-In a nutshell, after installing the PyPi package this is the common use:
+In a nutshell, after installing the PyPi package:
+$ pip install mona_uds_client
+
+This is the common use:
 
 ```
-from mona_uds_client import MonaUdsClient, MonaSingleMessage
+from mona_uds_client.mona_uds_client import MonaUdsClient, MonaSingleMessage
 
 # Use User ID as supplied by Mona team here.
 client = MonaUdsClient("test_user")
@@ -44,4 +47,26 @@ client.export(
         ),
     ]
 )
+```
+
+## Uploading new version to PyPI
+The main reference to follow to do that is on:
+https://packaging.python.org/tutorials/packaging-projects/
+
+### Prerequisites:
+1. Register on PyPI with your mona email: https://pypi.org/
+2. Ask itai@monalabs.io or nemo@monalabs.io to add you as collaborator
+3. If not installed, install twine: $ python3 -m pip install --user --upgrade twine
+4. If not installed, install build tools: $ python3 -m pip install --user --upgrade setuptools wheel
+
+### Actual upload:
+1. Change version number under setup.py
+2. If a new dependency is required, add it under setup.py under "install_requires"
+3. Build new version: 
+```
+$ python3 setup.py sdist bdist_wheel
+```
+4. Upload new version (can change '*' to actual version):
+```
+$ python -m twine upload dist/*
 ```
