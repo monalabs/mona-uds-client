@@ -113,7 +113,7 @@ class MonaSingleMessage:
     contextId: str
     message: dict
     arcClass: str
-    exportTimestamp: int
+    exportTimestamp: int|None = None
 
 
 class MonaUdsClient:
