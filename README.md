@@ -28,8 +28,8 @@ client = MonaUdsClient("test_user")
 context_class = "MY_CONTEXT"
 
 # Export a batch of two messages to Mona.
-message1 = {"x": 1, "s": "some_str", "l": ["a"], "o": {"k": ["v1", "v2"]}
-message2 = {"x": 2, "s": "another_str", "l": ["b"], "o": {"k": ["v3", "v4"]}
+message1 = {"x": 1, "s": "some_str", "l": ["a"], "o": {"k": ["v1", "v2"]}}
+message2 = {"x": 2, "s": "another_str", "l": ["b"], "o": {"k": ["v3", "v4"]}}
 
 # Actual export
 client.export(
