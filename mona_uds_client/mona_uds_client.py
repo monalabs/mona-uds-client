@@ -106,14 +106,14 @@ class MonaSingleMessage:
             the context ID.
         arcClass (str): (Required) context classes are defined in the Mona Config
             and define the schema of the contexts.
-        exportTimestamp (int): (Optional) Timestamp in seconds since epoch to set for
+        exportTimestamp (int|None): (Optional) Timestamp in seconds since epoch to set for
             the event of the context Id. If not supplied, current time is used.
     """
 
     contextId: str
     message: dict
     arcClass: str
-    exportTimestamp: int
+    exportTimestamp: int = None
 
 
 class MonaUdsClient:
