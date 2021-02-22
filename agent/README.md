@@ -64,4 +64,6 @@ spec:
 
 #### Deployment notes:
 * Specifying MONA_USER_ID and using the YAML without any changes will result in the best performance.
+  
+* Adding SOCKET_UID env var to the DaemonSet YAML allows setting a specific UID in order to use sockey between mona-uds-agent and mona-client which uses a specific UID (Default UID: 1000) 
 * Minimal requirement is 1 CPU, 2GB memory.
