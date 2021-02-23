@@ -4,7 +4,7 @@ LABEL Description="Mona Agent for Unix Domain Sockets"
 USER root
 RUN buildDeps="sudo make gcc g++ libc-dev ruby-dev" \
     && apt-get update \
-    && apt-get install -y --no-install-recommends sudo make gcc g++ libc-dev ruby-dev vim \
+    && apt-get install -y --no-install-recommends sudo make gcc g++ libc-dev ruby-dev vim gosu dumb-init \
     && sudo gem sources --clear-all \
     && sudo gem install fluent-plugin-multiprocess \
     && SUDO_FORCE_REMOVE=yes \
@@ -18,12 +18,16 @@ RUN buildDeps="sudo make gcc g++ libc-dev ruby-dev" \
 
 COPY fluent*.conf /fluentd/etc/
 RUN mkdir -p /var/run/mona && \
-    chown -R 999:999 /var/run/mona/
+    mkdir -p /home/fluent && \
+    chmod -R a=rw /var/run/mona/
+
+COPY entrypoint.sh /
+RUN chmod +x /entrypoint.sh
 
 # Default Environment Variable
 ENV UDS_SERVER_ADDRESS="/var/run/mona/mona.sock"
 ENV LOG_LEVEL="warn"
-
+ENV FLUENTD_OPT=""
 ENV FLUSH_INTERVAL="30s"
 ENV MONA_REST_TIMEOUT=5
 ENV MONA_REST_FORMAT_TYPE="json"
@@ -35,5 +39,4 @@ ENV BUFFER_TYPE="file"
 ENV CHUNK_MAX_SIZE="16MB"
 ENV CHUNK_MAX_RECORD_COUNT=1000
 
-USER fluent
-
+ENTRYPOINT ["/entrypoint.sh"]
