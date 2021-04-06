@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mona_uds_client",
-    version="0.0.5",
+    version="0.0.6",
     author="MonaLabs",
     author_email="nemo@monalabs.io",
     description="Client code for python Mona over Unix Domain Socket protocol",
