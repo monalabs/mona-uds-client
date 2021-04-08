@@ -20,12 +20,13 @@ for client exporting mechanisms.
 TODO(nemo): This is an temporary solution until the new mona-py-sdk will be launched
             and be able to support UDS, with a superset of the features offered here.
 """
-import socket
 import logging
+import socket
 import threading
+from dataclasses import dataclass
+from multiprocessing import Process
 from os import environ
 from typing import List
-from dataclasses import dataclass
 
 import msgpack
 
@@ -54,8 +55,12 @@ DEFAULT_UDS_SERVER_ADDRESS = environ.get(
 DEFAULT_UDS_SERVER_REPLICAS = int(environ.get("MONA_UDS_SERVER_REPLICAS", 3))
 MONA_AGENT_TAG = environ.get("MONA_AGENT_TAG", "mona.client")
 
-SHOULD_RAISE_EXCEPTIONS = (
-    _get_boolean_value_for_env_var("MONA_SHOULD_RAISE_EXCEPTIONS", False),
+# Max time (in seconds) to let synchronous operations work before retiring.
+# This is a safety mechanism and may happen if the agent is not working as intended.
+MONA_AGENT_TIMEOUT = float(environ.get("MONA_AGENT_TIMEOUT", 0.5))
+
+SHOULD_RAISE_EXCEPTIONS = _get_boolean_value_for_env_var(
+    "MONA_SHOULD_RAISE_EXCEPTIONS", False
 )
 SHOULD_AVOID_LOGGING = _get_boolean_value_for_env_var("MONA_SHOULD_AVOID_LOGGING", True)
 MONA_LOGGING_LEVEL = environ.get("MONA_LOGGING_LEVEL", "WARNING")
@@ -91,6 +96,15 @@ def _select_server(base_address, uds_server_replicas):
         server_address = base_address + str(CURRENT_SERVER_INDEX)
         CURRENT_SERVER_INDEX = (CURRENT_SERVER_INDEX + 1) % uds_server_replicas
         return server_address
+
+
+def _run_with_timeout(seconds, func, args=()):
+    process = Process(target=func, args=args)
+    process.start()
+    process.join(seconds)
+    if process.is_alive():
+        process.terminate()
+        raise MonaExportException("Blocking operation for socket timed out.")
 
 
 @dataclass
@@ -158,7 +172,9 @@ class MonaUdsClient:
             return False
 
         try:
-            self._send_data_by_uds(export_data)
+            _run_with_timeout(
+                MONA_AGENT_TIMEOUT, self._send_data_by_uds, (export_data,)
+            )
         except Exception as err:
             err_msg = f"Mona failed when trying to write data into UDS socket: {err}"
             LOGGER.warning(err_msg)
