@@ -129,6 +129,13 @@ class MonaSingleMessage:
     arcClass: str
     exportTimestamp: int = None
 
+    def get_dict(self):
+        return {
+            key: value
+            for key, value in self.__dict__.items()
+            if key in MonaSingleMessage.__dataclass_fields__.keys()
+        }
+
 
 class MonaUdsClient:
     """
@@ -192,7 +199,7 @@ class MonaUdsClient:
             0,  # Export time 0 tells agent to use current time for internal purposes.
             {
                 USER_ID_FIELD_NAME: self._user_id,
-                MESSAGES_FIELD_NAME: [message.__dict__ for message in messages],
+                MESSAGES_FIELD_NAME: [message.get_dict() for message in messages],
             },
         ]
         return msgpack.dumps(export_data)
